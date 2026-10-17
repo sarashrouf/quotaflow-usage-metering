@@ -1,0 +1,20 @@
+# Installed dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Compiled TypeScript output
+dist/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db

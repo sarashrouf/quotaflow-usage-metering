@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: quota-postgres
+
+    environment:
+      POSTGRES_USER: quota_app
+      POSTGRES_PASSWORD: quota_dev_password
+      POSTGRES_DB: quota_db
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quota_app -d quota_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
