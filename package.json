@@ -1,8 +1,8 @@
 {
   "name": "usage-metering-service",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Usage metering and quota management service",
+  "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
@@ -11,8 +11,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:app": "tsx src/db/migrate.ts",
-    "db:seed": "tsx src/db/seed.ts"
-  },
+    "db:seed": "tsx src/db/seed.ts",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run src/tests/quota-engine.test.ts",
+    "test:integration": "vitest run src/tests/consumption.integration.test.ts src/tests/month-boundary.integration.test.ts --maxWorkers=1 --no-file-parallelism"
+   },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -28,8 +31,11 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
     "drizzle-kit": "^0.31.11",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }
