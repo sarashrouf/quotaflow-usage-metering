@@ -20,10 +20,13 @@ function remainingAllowance(
 ): number {
   return Math.max(0, allowance - consumed);
 }
-
-export async function getUsageOverview(accountId: string) {
-  const month = getUtcMonth(currentTime());
-
+export async function getUsageOverview(
+  accountId: string,
+  requestedMonth?: string
+) {
+  const month = requestedMonth
+    ? getUtcMonth(new Date(`${requestedMonth}-01T00:00:00.000Z`))
+    : getUtcMonth(currentTime());
   // 1. Read the company's assigned plan and monthly usage.
   const [accountResult] = await db
     .select({

@@ -10,17 +10,45 @@ export const usageRouter = Router();
 usageRouter.use(requireAccountAuth);
 
 // GET /api/usage
-usageRouter.get("/usage", async (_req, res, next) => {
+
+const usageQuerySchema = z.object({
+  month: z.string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, {
+      message: "Month must use YYYY-MM format.",
+    })
+    .optional(),
+}).strict();
+
+// GET /api/usage
+// Example: GET /api/usage?month=2026-09
+usageRouter.get("/usage", async (req, res, next) => {
+  const parsed = usageQuerySchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid usage query parameters.",
+        details: parsed.error.issues,
+      },
+    });
+    return;
+  }
+
   try {
     const accountId = res.locals.accountId as string;
 
-    const result = await getUsageOverview(accountId);
+    const result = await getUsageOverview(
+      accountId,
+      parsed.data.month
+    );
 
     res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 });
+
 
 const historyQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
