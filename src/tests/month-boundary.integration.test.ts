@@ -175,7 +175,40 @@ describe("UTC Month Boundary", () => {
 
     expect(novemberUser.consumedUnits).toBe(10);
     expect(novemberUser.remainingUnits).toBe(0);
+// Verify historical usage through the public API.
+// The current test clock is November.
 
+const historicalOctober = await api
+  .get("/api/usage?month=2026-10")
+  .set("X-API-Key", apiKey);
+
+expect(historicalOctober.status).toBe(200);
+expect(historicalOctober.body.month).toBe("2026-10-01");
+
+const historicalOctoberUser =
+  historicalOctober.body.users.find(
+    (user: { id: string }) => user.id === userId
+  );
+
+expect(historicalOctoberUser).toBeDefined();
+expect(historicalOctoberUser.consumedUnits).toBe(10);
+expect(historicalOctoberUser.remainingUnits).toBe(0);
+
+// Verify November independently.
+const historicalNovember = await api
+  .get("/api/usage?month=2026-11")
+  .set("X-API-Key", apiKey);
+
+expect(historicalNovember.status).toBe(200);
+expect(historicalNovember.body.month).toBe("2026-11-01");
+
+const historicalNovemberUser =
+  historicalNovember.body.users.find(
+    (user: { id: string }) => user.id === userId
+  );
+
+expect(historicalNovemberUser).toBeDefined();
+expect(historicalNovemberUser.consumedUnits).toBe(10);
     // STEP 5: October's records must still be stored.
     const savedMonths = await pool.query(
       `
@@ -205,5 +238,30 @@ describe("UTC Month Boundary", () => {
 
     expect(history.status).toBe(200);
     expect(history.body.history).toHaveLength(3);
+
+    // Invalid calendar months must return HTTP 400.
+for (const invalidMonth of [
+  "2026-00",
+  "2026-13",
+  "October",
+  "2026-1",
+]) {
+  const response = await api
+    .get(`/api/usage?month=${invalidMonth}`)
+    .set("X-API-Key", apiKey);
+
+  expect(response.status).toBe(400);
+  expect(response.body.error.code).toBe(
+    "VALIDATION_ERROR"
+  );
+}
+// Account totals must also remain independent.
+expect(
+  historicalOctober.body.account.consumedUnits
+).toBe(10);
+
+expect(
+  historicalNovember.body.account.consumedUnits
+).toBe(10);
   });
 });
