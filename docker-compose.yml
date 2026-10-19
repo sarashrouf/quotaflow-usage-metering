@@ -6,7 +6,7 @@ services:
 
     environment:
       POSTGRES_USER: quota_app
-      POSTGRES_PASSWORD: quota_dev_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: quota_db
 
     ports:
@@ -30,7 +30,7 @@ services:
       - .env
 
     environment:
-      DATABASE_URL: postgresql://quota_app:quota_dev_password@postgres:5432/quota_db
+      DATABASE_URL: ${DOCKER_DATABASE_URL:?DOCKER_DATABASE_URL is required}
 
     command: >
       sh -c "npm run db:migrate:app && npm run db:seed"
@@ -50,7 +50,7 @@ services:
 
     environment:
       PORT: "3000"
-      DATABASE_URL: postgresql://quota_app:quota_dev_password@postgres:5432/quota_db
+      DATABASE_URL: ${DOCKER_DATABASE_URL:?DOCKER_DATABASE_URL is required}
       NODE_ENV: production
 
     ports:
@@ -61,6 +61,7 @@ services:
         condition: service_completed_successfully
 
     restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
@@ -73,5 +74,6 @@ services:
       - api
 
     restart: unless-stopped
+
 volumes:
   postgres_data:
